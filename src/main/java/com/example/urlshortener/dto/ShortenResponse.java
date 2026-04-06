@@ -21,7 +21,7 @@ public class ShortenResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // Converts ShortUrl entity to ShortenResponse DTO for API responses
+    // --- Entity + DTO -----------------------------
     public static ShortenResponse from(ShortUrl shortUrl) {
         return ShortenResponse.builder()
                 .id(shortUrl.getId())
