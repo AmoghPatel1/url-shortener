@@ -21,8 +21,6 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-//TODO: Fix failing testcases.
-
 @Testcontainers
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -293,7 +291,7 @@ class UrlShortenerControllerIT {
     class Stats {
 
         @Test
-        @DisplayName("Should return 200 OK with accessCount")
+        @DisplayName("Should return 200 OK with accessCount of 0 on a freshly created URL")
         void shouldReturn200WithAccessCount() {
             String shortCode = Objects.requireNonNull(post().getBody()).getShortCode();
 
@@ -302,7 +300,7 @@ class UrlShortenerControllerIT {
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
-            assertThat(response.getBody().getAccessCount()).isNotNull();
+            assertThat(response.getBody().getAccessCount()).isEqualTo(0L);
         }
 
         @Test
