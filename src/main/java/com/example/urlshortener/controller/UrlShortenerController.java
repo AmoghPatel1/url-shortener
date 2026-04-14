@@ -23,7 +23,7 @@ public class UrlShortenerController {
      * Creates a new short URL.
      * Returns 201 Created with the ShortenResponse body.
      */
-    @PostMapping("/sorten")
+    @PostMapping("/shorten")
     public ResponseEntity<ShortenResponse> shorten(@Valid @RequestBody ShortenRequest shortenRequest) {
         log.info("POST /api/shorten - url: {}", shortenRequest.getUrl());
 
