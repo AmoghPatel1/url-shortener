@@ -8,6 +8,8 @@ import com.example.urlshortener.repository.ShortUrlRepository;
 import com.example.urlshortener.util.ShortCodeGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +59,7 @@ public class UrlShortenerService {
      * Looks up a ShortUrl entity by its short code.
      * Throws UrlNotFoundException if not found.
      */
+    @Cacheable(value = "urls", key = "#code")
     @Transactional(readOnly = true)
     public ShortenResponse getByShortCode(String code) {
         log.info("Looking up short code: '{}'", code);
@@ -72,6 +75,7 @@ public class UrlShortenerService {
      * persists and returns updated ShortenResponse.
      * @PreUpdate on entity automatically refreshes updatedAt.
      */
+    @CacheEvict(value = "urls", key = "#code")
     @Transactional
     public ShortenResponse updateShortUrl(String code,  ShortenRequest shortenRequest) {
         log.info("Updating short code '{}' → new URL: {}", code, shortenRequest.getUrl());
@@ -92,6 +96,7 @@ public class UrlShortenerService {
      * Finds entity by shortCode and deletes it from DB.
      * Throws UrlNotFoundException if code doesn't exist.
      */
+    @CacheEvict(value = "urls", key = "#code")
     @Transactional
     public void deleteShortUrl(String code) {
         log.info("Deleting short code '{}'", code);
@@ -136,6 +141,8 @@ public class UrlShortenerService {
      * Note: For high-traffic redirects, prefer
      * repository.incrementAccessCount() (direct JPQL UPDATE).
      */
+    // No @CacheEvict here by design — accessCount in the "urls" cache is intentionally allowed
+    // to be slightly stale. getStats() always queries the DB directly for the live count.
     @Transactional
     public ShortenResponse incrementAccessCount(String code) {
         log.info("Incrementing access count for short code '{}'", code);
