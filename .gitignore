@@ -1,9 +1,12 @@
 HELP.md
-docs/superpowers/
+docs/
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+.claude
+CLAUDE.md
+url_shortener_implementation.md
 
 ### STS ###
 .apt_generated
