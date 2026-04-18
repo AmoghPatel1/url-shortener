@@ -46,36 +46,76 @@ Decisions made, problems hit, and things worth knowing for the next session or a
 
 ## Testing strategy
 
-### Three layers
+### Four layers
 | Layer | Class | Tools |
 |-------|-------|-------|
 | Unit — generator | `ShortCodeGeneratorTest` | Pure JUnit; no mocks needed |
 | Unit — service | `UrlShortenerServiceTest` | Mockito; mocks `ShortUrlRepository` + `ShortCodeGenerator` |
-| Integration | `UrlShortenerControllerIT` | `@SpringBootTest(RANDOM_PORT)` + Testcontainers PostgreSQL + `TestRestTemplate` |
+| Integration — API | `UrlShortenerControllerIT` | `@SpringBootTest(RANDOM_PORT)` + Testcontainers PostgreSQL + `TestRestTemplate` + `@ActiveProfiles("test")` |
+| Integration — cache | `RedisCacheIT` | `@SpringBootTest(RANDOM_PORT)` + Testcontainers PostgreSQL + Redis + `@SpyBean ShortUrlRepository` — no test profile |
 
 ### Test profile trick
-`application-test.properties` disables Redis entirely so the test suite doesn't need a running Redis instance — even after Phase 6 wires up caching:
+`application-test.properties` disables Redis entirely so the test suite doesn't need a running Redis instance:
 ```properties
 spring.cache.type=none
 spring.autoconfigure.exclude=\
   org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,\
   org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
 ```
-This means cache annotations become no-ops in tests. To test caching behaviour specifically, add a dedicated IT class with a `GenericContainer("redis:7-alpine")`.
+Cache annotations become no-ops. `RedisCacheIT` intentionally does NOT use `@ActiveProfiles("test")` — it needs real caching and overrides all coordinates via `@DynamicPropertySource`.
 
-### Testcontainers pattern
+### Testcontainers pattern — dual containers (Postgres + Redis)
 ```java
 @Container
-static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15");
+static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
+        .withDatabaseName("urlshortener_test")
+        .withUsername("postgres")
+        .withPassword("postgres");
+
+@Container
+@SuppressWarnings("resource")
+static GenericContainer<?> redis = new GenericContainer<>("redis:7-alpine")
+        .withExposedPorts(6379);
 
 @DynamicPropertySource
-static void overrideProps(DynamicPropertyRegistry r) {
-    r.add("spring.datasource.url", postgres::getJdbcUrl);
-    r.add("spring.datasource.username", postgres::getUsername);
-    r.add("spring.datasource.password", postgres::getPassword);
+static void overrideProperties(DynamicPropertyRegistry registry) {
+    String jdbcUrl = postgres.getJdbcUrl() + "&TimeZone=UTC";
+    registry.add("spring.datasource.url",  () -> jdbcUrl);
+    registry.add("spring.datasource.username", postgres::getUsername);
+    registry.add("spring.datasource.password", postgres::getPassword);
+    registry.add("spring.flyway.url",      () -> jdbcUrl);
+    registry.add("spring.flyway.user",     postgres::getUsername);
+    registry.add("spring.flyway.password", postgres::getPassword);
+    registry.add("spring.data.redis.host", redis::getHost);
+    registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379).toString());
 }
 ```
-The `@DynamicPropertySource` wires the Testcontainers URL in before the Spring context starts — no hardcoded test credentials.
+
+### UTC timezone in IT tests
+All IT test classes must include:
+```java
+static {
+    java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("UTC"));
+}
+```
+Without this, the JVM's system timezone (e.g. `Asia/Calcutta`) is passed to the PostgreSQL JDBC driver which rejects it, causing context load failure before any tests run.
+
+### Surefire does not pick up `*IT.java` by default
+Maven Surefire's default includes only match `*Test.java` and `*Tests.java`. Add an explicit `<includes>` block to `pom.xml`:
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <configuration>
+        <includes>
+            <include>**/*Test.java</include>
+            <include>**/*Tests.java</include>
+            <include>**/*IT.java</include>
+        </includes>
+    </configuration>
+</plugin>
+```
+Without this, `UrlShortenerControllerIT` and `RedisCacheIT` are silently skipped by `./mvnw test`.
 
 ---
 
@@ -83,7 +123,7 @@ The `@DynamicPropertySource` wires the Testcontainers URL in before the Spring c
 
 1. **`incrementAccessCount` has no REST endpoint** — the service method exists but nothing calls it from HTTP. `accessCount` will stay at 0 until the redirect endpoint (Phase 8) or a dedicated endpoint is added.
 
-2. **No Redis caching tests** — Phase 6 will add `@Cacheable`/`@CacheEvict` but there are no tests proving cache hits or eviction. Add an IT class with a Testcontainers Redis container.
+2. ~~**No Redis caching tests**~~ ✅ Done in Phase 6 — `RedisCacheIT` covers cache hit, eviction on update, eviction on delete.
 
 3. **`NoResourceFoundException` returns 500** — Spring 6.1+ maps unmatched routes through the static resource handler; the generic `Exception` handler catches it. Add an explicit handler if this matters.
 
@@ -100,20 +140,55 @@ The `@DynamicPropertySource` wires the Testcontainers URL in before the Spring c
 
 ---
 
-## Phase 6 checklist (Redis caching) — what to do next
+## Phase 6 — Redis caching (done)
 
-1. Add to `pom.xml`: `spring-boot-starter-data-redis`
-2. Add to `application.properties`:
-   ```properties
-   spring.data.redis.host=localhost
-   spring.data.redis.port=6379
-   spring.cache.type=redis
-   spring.cache.redis.time-to-live=3600000
-   ```
-3. Add `@EnableCaching` to `UrlshortenerApplication`
-4. Annotate service methods:
-   - `getByShortCode`: `@Cacheable(value = "urls", key = "#code")`
-   - `updateShortUrl`: `@CacheEvict(value = "urls", key = "#code")`
-   - `deleteShortUrl`: `@CacheEvict(value = "urls", key = "#code")`
-5. Verify via SQL logs: second GET for same code should produce no SELECT
-6. Write a Redis IT class to cover cache-hit and eviction scenarios
+### What was implemented
+
+- `spring-boot-starter-data-redis` added to `pom.xml`
+- `@EnableCaching` on `UrlshortenerApplication`
+- `CacheConfig` bean with `GenericJackson2JsonRedisSerializer` (see details below)
+- `@Cacheable(value = "urls", key = "#code")` on `getByShortCode`
+- `@CacheEvict(value = "urls", key = "#code")` on `updateShortUrl` and `deleteShortUrl`
+- `getStats` and `incrementAccessCount` intentionally uncached — `getStats` always returns live DB data; `accessCount` in the `getByShortCode` cache is allowed to be slightly stale
+
+### Redis serialization — `GenericJackson2JsonRedisSerializer` with `LocalDateTime`
+
+The no-arg `new GenericJackson2JsonRedisSerializer()` fails with `SerializationException` when the cached DTO contains `LocalDateTime` fields. Fix: construct it with a configured `ObjectMapper`:
+
+```java
+PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator
+        .builder()
+        .allowIfSubType("com.example.urlshortener.dto")  // whitelist own DTO package only
+        .build();
+
+ObjectMapper objectMapper = new ObjectMapper();
+objectMapper.registerModule(new JavaTimeModule());
+objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+
+return RedisCacheConfiguration.defaultCacheConfig()
+        .serializeValuesWith(RedisSerializationContext.SerializationPair
+                .fromSerializer(new GenericJackson2JsonRedisSerializer(objectMapper)));
+```
+
+**Do NOT use `allowIfSubType(Object.class)`** — that makes the validator a no-op and opens gadget-chain attack vectors. Use a package prefix (`"com.example.urlshortener.dto"`) or `allowIfBaseType(SpecificClass.class)`.
+
+**Note:** `allowIfBaseType(ShortenResponse.class)` does NOT work here — Jackson checks the declared type at deserialization time (which is `Object`, not `ShortenResponse`), causing `InvalidTypeIdException`. Package-prefix whitelist is the correct pattern.
+
+**Note:** This `ObjectMapper` is isolated from Spring MVC's Jackson config. `spring.jackson.*` settings do not apply to it. Register `JavaTimeModule` explicitly and disable timestamp serialization manually.
+
+### Cache-hit testing: spy on the repository, not the service
+
+```java
+// WRONG — spy sits outside the caching proxy boundary
+@SpyBean
+private UrlShortenerService urlShortenerService;
+verify(urlShortenerService, times(1)).getByShortCode(code); // always observes 2 calls
+
+// CORRECT — spy sits inside the caching proxy boundary
+@SpyBean
+private ShortUrlRepository shortUrlRepository;
+verify(shortUrlRepository, times(1)).findByShortCode(code); // 1 on miss, 0 on hit
+```
+
+Spring's caching proxy wraps the service bean. A spy on the service intercepts calls before the cache can short-circuit them. A spy on the repository is inside the cache boundary — on a cache hit, the method never reaches the repository.
