@@ -2,6 +2,7 @@ package com.example.urlshortener.service;
 
 import com.example.urlshortener.dto.ShortenRequest;
 import com.example.urlshortener.dto.ShortenResponse;
+import java.util.List;
 import com.example.urlshortener.entity.ShortUrl;
 import com.example.urlshortener.exception.UrlNotFoundException;
 import com.example.urlshortener.repository.ShortUrlRepository;
@@ -46,6 +47,19 @@ public class UrlShortenerService {
         log.info("Short URL created — code: '{}', id: {}", saved.getShortCode(), saved.getId());
 
         return ShortenResponse.from(saved);
+    }
+
+    // ── List All Short URLs ───────────────────────────
+    /**
+     * Returns all persisted short URLs as ShortenResponse DTOs.
+     */
+    @Transactional(readOnly = true)
+    public List<ShortenResponse> listAll() {
+        log.info("Listing all short URLs");
+        return shortUrlRepository.findAll()
+                .stream()
+                .map(ShortenResponse::from)
+                .toList();
     }
 
 //    Why @Transactional(readOnly = true) on Reads
@@ -156,6 +170,23 @@ public class UrlShortenerService {
         log.info("Access count for '{}' is now: {}", code, updated.getAccessCount());
 
         return ShortenResponse.from(updated);
+    }
+
+    // ── Resolve URL (for redirect) ────────────────────
+    /**
+     * Atomically increments accessCount via JPQL direct UPDATE,
+     * then returns the original URL for redirect.
+     * Throws UrlNotFoundException if code doesn't exist.
+     * Preferred over Hibernate-managed increment for high-traffic redirects.
+     */
+    @Transactional
+    public String resolveUrl(String code) {
+        log.info("Resolving short code '{}' for redirect", code);
+        int updated = shortUrlRepository.incrementAccessCount(code);
+        if (updated == 0) {
+            throw new UrlNotFoundException(code);
+        }
+        return findOrThrow(code).getOriginalUrl();
     }
 
     // ── Private Helper ────────────────────────────────

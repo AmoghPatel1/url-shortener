@@ -2,6 +2,7 @@ package com.example.urlshortener.controller;
 
 import com.example.urlshortener.dto.ShortenRequest;
 import com.example.urlshortener.dto.ShortenResponse;
+import java.util.List;
 import com.example.urlshortener.service.UrlShortenerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,18 @@ import org.springframework.web.bind.annotation.*;
 public class UrlShortenerController {
 
     private final UrlShortenerService urlShortenerService;
+
+    // ── GET /api/shorten ──────────────────────────────
+    /**
+     * Returns all short URLs.
+     * Returns 200 OK with an array of ShortenResponse bodies.
+     */
+    @GetMapping("/shorten")
+    public ResponseEntity<List<ShortenResponse>> listAll() {
+        log.info("GET /api/shorten — listing all");
+        List<ShortenResponse> all = urlShortenerService.listAll();
+        return ResponseEntity.ok(all);
+    }
 
     // ── POST /api/shorten ─────────────────────────────
     /**
