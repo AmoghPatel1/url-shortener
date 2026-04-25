@@ -14,7 +14,10 @@ public interface ShortUrlRepository extends JpaRepository<ShortUrl, Long> {
 
     Boolean existsByShortCode(String shortCode);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE ShortUrl s SET s.accessCount = s.accessCount + 1 WHERE s.shortCode = :shortCode")
     int incrementAccessCount(@Param("shortCode") String shortCode);
+
+    @Query("SELECT s.originalUrl FROM ShortUrl s WHERE s.shortCode = :shortCode")
+    Optional<String> findOriginalUrlByShortCode(@Param("shortCode") String shortCode);
 }

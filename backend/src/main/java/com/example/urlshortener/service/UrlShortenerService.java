@@ -186,7 +186,8 @@ public class UrlShortenerService {
         if (updated == 0) {
             throw new UrlNotFoundException(code);
         }
-        return findOrThrow(code).getOriginalUrl();
+        return shortUrlRepository.findOriginalUrlByShortCode(code)
+                .orElseThrow(() -> new UrlNotFoundException(code));
     }
 
     // ── Private Helper ────────────────────────────────
