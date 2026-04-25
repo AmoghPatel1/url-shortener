@@ -10,9 +10,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - TZ=Asia/Kolkata
-      - POSTGRES_INITDB_ARGS=--timezone=Asia/Kolkata
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:

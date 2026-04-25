@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Infrastructure
 ```bash
-# Start PostgreSQL (port 5433) and Redis (port 6379) — run from repo root
+# Start PostgreSQL (port 5434) and Redis (port 6379) — run from repo root
 docker-compose up -d
 
 # Stop infrastructure
@@ -53,16 +53,13 @@ HTTP → UrlShortenerController (/api/*)
 
 **Entity timestamps**: `@PrePersist` sets both `createdAt`/`updatedAt`; `@PreUpdate` refreshes only `updatedAt`. The `createdAt` column is marked `updatable = false` in the JPA mapping.
 
-**Schema management**: Flyway handles all DDL. `spring.jpa.hibernate.ddl-auto=validate` means Hibernate only validates against the existing schema — never modifies it. Migrations live in `src/main/resources/db/migration/`.
+**Schema management**: Flyway handles all DDL. `spring.jpa.hibernate.ddl-auto=validate` means Hibernate only validates against the existing schema — never modifies it. Migrations live in `backend/src/main/resources/db/migration/`.
 
 **Error handling**: `GlobalExceptionHandler` (`@RestControllerAdvice`) centralizes all error responses into `ErrorResponse` DTOs. `UrlNotFoundException` → 404, `MethodArgumentNotValidException` → 400 with field-level error map.
 
 **Redis**: Declared as a dependency in `docker-compose.yml` and configured in `application.properties`, but caching is not yet wired up in the service layer.
 
-### Known issue
-`POST /api/shorten` has a typo in the route — it maps to `/api/sorten` (one 't'), not `/api/shorten`. The integration tests post to `/api/shorten` and will fail on create until this is fixed.
-
 ### Infrastructure
-- PostgreSQL runs on **port 5433** (not default 5432) to avoid conflicts
+- PostgreSQL runs on **port 5434** (not default 5432) to avoid conflicts
 - App runs on **port 8081**
 - CORS is configured for `localhost:3000` and `localhost:5173`
