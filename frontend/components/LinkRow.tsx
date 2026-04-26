@@ -9,7 +9,7 @@ interface Props {
   onDelete: (code: string) => Promise<void>;
 }
 
-const SHORT_BASE = "http://localhost:8081";
+const SHORT_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
 
 export default function LinkRow({ link, onDelete }: Props) {
   const [copied, setCopied] = useState(false);

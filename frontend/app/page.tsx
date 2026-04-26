@@ -8,6 +8,8 @@ import ResultCard from "@/components/ResultCard";
 import LinkRow from "@/components/LinkRow";
 import Link from "next/link";
 
+const SHORT_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
+
 export default function HomePage() {
   const [result, setResult] = useState<ShortUrl | null>(null);
   const [loading, setLoading] = useState(false);
@@ -66,13 +68,13 @@ export default function HomePage() {
               <div key={link.shortCode} className="bg-surface rounded-lg px-4 py-3 flex items-center justify-between gap-3">
                 <div className="flex flex-col gap-0.5 min-w-0">
                   <span className="text-accent text-sm font-bold">
-                    localhost:8081/{link.shortCode}
+                    {SHORT_BASE.replace("http://", "")}/{link.shortCode}
                   </span>
                   <span className="text-faint text-xs truncate">{link.url}</span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <button
-                    onClick={() => navigator.clipboard.writeText(`http://localhost:8081/${link.shortCode}`)}
+                    onClick={() => navigator.clipboard.writeText(`${SHORT_BASE}/${link.shortCode}`)}
                     className="text-xs text-muted hover:text-accent transition-colors"
                   >
                     copy

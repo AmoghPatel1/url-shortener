@@ -6,7 +6,7 @@ import type { ShortUrl } from "@/lib/api";
 import NavBar from "@/components/NavBar";
 import Link from "next/link";
 
-const SHORT_BASE = "http://localhost:8081";
+const SHORT_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
 
 export default function AnalyticsPage({ params }: { params: { code: string } }) {
   const [data, setData] = useState<ShortUrl | null>(null);

@@ -8,7 +8,7 @@ interface Props {
   onReset: () => void;
 }
 
-const SHORT_BASE = "http://localhost:8081";
+const SHORT_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
 
 export default function ResultCard({ result, onReset }: Props) {
   const [copied, setCopied] = useState(false);
