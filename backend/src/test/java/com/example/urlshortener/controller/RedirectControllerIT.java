@@ -2,7 +2,9 @@ package com.example.urlshortener.controller;
 
 import com.example.urlshortener.dto.ShortenRequest;
 import com.example.urlshortener.dto.ShortenResponse;
+import com.example.urlshortener.repository.ShortUrlRepository;
 import com.example.urlshortener.service.UrlShortenerService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -49,6 +51,12 @@ class RedirectControllerIT {
 
     @Autowired MockMvc mockMvc;
     @Autowired UrlShortenerService service;
+    @Autowired ShortUrlRepository repository;
+
+    @BeforeEach
+    void cleanUp() {
+        repository.deleteAll();
+    }
 
     @Test
     void redirect_validCode_returns302() throws Exception {

@@ -25,5 +25,13 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);                      // cache preflight for 1 hour
+
+        registry.addMapping("/{*code}")
+                .allowedOrigins(
+                        "http://localhost:3000",
+                        "http://localhost:5173"
+                )
+                .allowedMethods("GET")
+                .maxAge(3600);
     }
 }
