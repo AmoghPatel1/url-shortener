@@ -1,35 +1,109 @@
-@import "@fontsource/jetbrains-mono/400.css";
-@import "@fontsource/jetbrains-mono/700.css";
-@import "@fontsource/jetbrains-mono/800.css";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
-  box-sizing: border-box;
+/* ── Loop Design Tokens ─────────────────────────────────────── */
+:root {
+  --paper:    #f7f0e4;
+  --paper2:   #ffffff;
+  --surface:  #ffffff;
+  --ink:      #2b1f17;
+  --ink-soft: #5a4a3e;
+  --mute:     #8a7466;
+  --rule:     #e3d6c3;
+  --pop:      #ff5c39;
+  --mint:     #a8e6c1;
+  --sky:      #bcd9ff;
+  --lemon:    #ffe17a;
+  --rose:     #ffc4d1;
+  --lilac:    #e8d4ff;
+  --danger:   #d63a1f;
+  --success:  #3e9e6b;
+  --dot-bg:   rgba(43, 31, 23, 0.08);
+}
+
+[data-theme="dark"] {
+  --paper:    #1f1815;
+  --paper2:   #2a211c;
+  --surface:  #2a211c;
+  --ink:      #fff5e3;
+  --ink-soft: #d6c5b0;
+  --mute:     #8a7466;
+  --rule:     #3d3027;
+  --pop:      #ff7a5c;
+  --mint:     #3d6e52;
+  --sky:      #3a5778;
+  --lemon:    #7d6428;
+  --rose:     #7a3d52;
+  --lilac:    #5a4978;
+  --danger:   #ff6b4a;
+  --success:  #7ec18e;
+  --dot-bg:   rgba(255, 245, 227, 0.06);
+}
+
+/* ── Base ───────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  background: var(--paper);
 }
 
 body {
-  background-color: #0d0d0d;
-  color: #ffffff;
-  font-family: "JetBrains Mono", monospace;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans, -apple-system, system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background-color: #00ff8833;
-  color: #00ff88;
+  background: var(--pop);
+  color: #fff;
+  opacity: 0.3;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+
+/* ── Dot grid background ────────────────────────────────────── */
+.dot-bg {
+  background-image: radial-gradient(circle at 1px 1px, var(--dot-bg) 1px, transparent 0);
+  background-size: 14px 14px;
 }
 
-::-webkit-scrollbar-track {
-  background: #1a1a1a;
+/* ── Keyframes ──────────────────────────────────────────────── */
+@keyframes loopPop {
+  0%   { transform: scale(0.85) rotate(-3deg); opacity: 0; }
+  60%  { transform: scale(1.04) rotate(-1deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-1.2deg); opacity: 1; }
 }
 
-::-webkit-scrollbar-thumb {
-  background: #00ff8844;
-  border-radius: 3px;
+@keyframes loopShake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-5px); }
+  75%       { transform: translateX(5px); }
+}
+
+@keyframes loopBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+@keyframes loopSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes loopCaret {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+@keyframes loopPulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.9; }
+}
+
+@keyframes loopSlideUp {
+  from { transform: translateX(-50%) translateY(24px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0); opacity: 1; }
 }

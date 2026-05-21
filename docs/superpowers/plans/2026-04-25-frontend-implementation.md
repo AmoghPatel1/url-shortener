@@ -1,6 +1,6 @@
 # snip. Frontend Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Build the snip. Next.js frontend and add two missing backend endpoints (list all URLs, redirect).
 
@@ -70,7 +70,7 @@
 - Modify: `backend/src/main/java/com/example/urlshortener/repository/ShortUrlRepository.java`
 - Modify: `backend/src/main/java/com/example/urlshortener/controller/UrlShortenerController.java`
 
-- [ ] **Step 1: Add JPQL increment method to repository**
+- [x] **Step 1: Add JPQL increment method to repository**
 
 Replace `ShortUrlRepository.java` with:
 
@@ -97,7 +97,7 @@ public interface ShortUrlRepository extends JpaRepository<ShortUrl, Long> {
 }
 ```
 
-- [ ] **Step 2: Add `resolveUrl` to service**
+- [x] **Step 2: Add `resolveUrl` to service**
 
 In `UrlShortenerService.java`, add this method after `incrementAccessCount()`:
 
@@ -113,7 +113,7 @@ public String resolveUrl(String code) {
 }
 ```
 
-- [ ] **Step 3: Add `GET /api/shorten` list endpoint to controller**
+- [x] **Step 3: Add `GET /api/shorten` list endpoint to controller**
 
 In `UrlShortenerController.java`, add this method after the class-level `@RequestMapping`:
 
@@ -128,7 +128,7 @@ public ResponseEntity<List<ShortenResponse>> listAll() {
 
 Also add `import java.util.List;` at the top.
 
-- [ ] **Step 4: Add `listAll` to service**
+- [x] **Step 4: Add `listAll` to service**
 
 In `UrlShortenerService.java`, add after `createShortUrl()`:
 
@@ -145,7 +145,7 @@ public List<ShortenResponse> listAll() {
 
 Also add `import java.util.List;` at the top.
 
-- [ ] **Step 5: Start the app and verify list endpoint**
+- [x] **Step 5: Start the app and verify list endpoint**
 
 ```bash
 cd backend && ./mvnw spring-boot:run
@@ -154,7 +154,7 @@ curl -s http://localhost:8081/api/shorten | jq
 
 Expected: `[]` (empty array if no data) or array of ShortenResponse objects.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend/src/main/java/com/example/urlshortener/repository/ShortUrlRepository.java
@@ -171,7 +171,7 @@ git commit -m "feat: add list-all endpoint and JPQL increment to repository"
 - Create: `backend/src/main/java/com/example/urlshortener/controller/RedirectController.java`
 - Create: `backend/src/test/java/com/example/urlshortener/controller/RedirectControllerIT.java`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `backend/src/test/java/com/example/urlshortener/controller/RedirectControllerIT.java`:
 
@@ -218,7 +218,7 @@ class RedirectControllerIT {
 }
 ```
 
-- [ ] **Step 2: Run test — verify it fails**
+- [x] **Step 2: Run test — verify it fails**
 
 ```bash
 cd backend && ./mvnw test -Dtest=RedirectControllerIT
@@ -226,7 +226,7 @@ cd backend && ./mvnw test -Dtest=RedirectControllerIT
 
 Expected: `FAIL` — `RedirectController` doesn't exist yet.
 
-- [ ] **Step 3: Create redirect controller**
+- [x] **Step 3: Create redirect controller**
 
 Create `backend/src/main/java/com/example/urlshortener/controller/RedirectController.java`:
 
@@ -263,7 +263,7 @@ public class RedirectController {
 }
 ```
 
-- [ ] **Step 4: Run test — verify it passes**
+- [x] **Step 4: Run test — verify it passes**
 
 ```bash
 cd backend && ./mvnw test -Dtest=RedirectControllerIT
@@ -271,7 +271,7 @@ cd backend && ./mvnw test -Dtest=RedirectControllerIT
 
 Expected: `BUILD SUCCESS`, both tests green.
 
-- [ ] **Step 5: Verify redirect manually**
+- [x] **Step 5: Verify redirect manually**
 
 ```bash
 curl -v http://localhost:8081/abc123
@@ -279,7 +279,7 @@ curl -v http://localhost:8081/abc123
 
 Expected: `HTTP/1.1 302` with `Location: <original-url>` header (or 404 if code doesn't exist).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend/src/main/java/com/example/urlshortener/controller/RedirectController.java
@@ -298,7 +298,7 @@ git commit -m "feat: add redirect endpoint GET /{code} with access count increme
 - Modify: `frontend/tailwind.config.ts`
 - Modify: `frontend/app/globals.css`
 
-- [ ] **Step 1: Scaffold Next.js app in frontend/**
+- [x] **Step 1: Scaffold Next.js app in frontend/**
 
 ```bash
 cd url-shortener
@@ -313,13 +313,13 @@ When prompted (if not using `--yes`):
 - App Router: Yes
 - Import alias: `@/*`
 
-- [ ] **Step 2: Install JetBrains Mono font package**
+- [x] **Step 2: Install JetBrains Mono font package**
 
 ```bash
 cd frontend && npm install @fontsource/jetbrains-mono
 ```
 
-- [ ] **Step 3: Configure Tailwind with snip. color tokens**
+- [x] **Step 3: Configure Tailwind with snip. color tokens**
 
 Replace `frontend/tailwind.config.ts` with:
 
@@ -357,7 +357,7 @@ const config: Config = {
 export default config;
 ```
 
-- [ ] **Step 4: Update globals.css**
+- [x] **Step 4: Update globals.css**
 
 Replace `frontend/app/globals.css` with:
 
@@ -399,7 +399,7 @@ body {
 }
 ```
 
-- [ ] **Step 5: Update root layout**
+- [x] **Step 5: Update root layout**
 
 Replace `frontend/app/layout.tsx` with:
 
@@ -423,7 +423,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-- [ ] **Step 6: Start dev server and verify blank dark page loads**
+- [x] **Step 6: Start dev server and verify blank dark page loads**
 
 ```bash
 cd frontend && npm run dev
@@ -431,7 +431,7 @@ cd frontend && npm run dev
 
 Open http://localhost:3000. Expected: dark background (`#0d0d0d`), no errors in console.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add frontend/
@@ -446,14 +446,14 @@ git commit -m "feat: scaffold Next.js frontend with Tailwind and snip. theme"
 - Create: `frontend/lib/api.ts`
 - Create: `frontend/lib/api.test.ts`
 
-- [ ] **Step 1: Install jest + RTL for frontend**
+- [x] **Step 1: Install jest + RTL for frontend**
 
 ```bash
 cd frontend
 npm install --save-dev jest jest-environment-jsdom @testing-library/react @testing-library/jest-dom ts-jest @types/jest
 ```
 
-- [ ] **Step 2: Add jest config**
+- [x] **Step 2: Add jest config**
 
 Create `frontend/jest.config.ts`:
 
@@ -469,7 +469,7 @@ const config: Config = {
 export default config;
 ```
 
-- [ ] **Step 3: Write failing tests for API client**
+- [x] **Step 3: Write failing tests for API client**
 
 Create `frontend/lib/api.test.ts`:
 
@@ -517,7 +517,7 @@ test("deleteUrl calls DELETE /api/shorten/abc123", async () => {
 });
 ```
 
-- [ ] **Step 4: Run tests — verify they fail**
+- [x] **Step 4: Run tests — verify they fail**
 
 ```bash
 cd frontend && npx jest lib/api.test.ts
@@ -525,7 +525,7 @@ cd frontend && npx jest lib/api.test.ts
 
 Expected: `FAIL` — `api` module not found.
 
-- [ ] **Step 5: Create API client**
+- [x] **Step 5: Create API client**
 
 Create `frontend/lib/api.ts`:
 
@@ -579,7 +579,7 @@ export const deleteUrl = (code: string) =>
   request<void>(`/api/shorten/${code}`, { method: "DELETE" });
 ```
 
-- [ ] **Step 6: Run tests — verify they pass**
+- [x] **Step 6: Run tests — verify they pass**
 
 ```bash
 cd frontend && npx jest lib/api.test.ts
@@ -587,7 +587,7 @@ cd frontend && npx jest lib/api.test.ts
 
 Expected: `PASS`, 3 tests green.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add frontend/lib/ frontend/jest.config.ts
@@ -603,7 +603,7 @@ git commit -m "feat: add typed API client for snip. backend"
 **Files:**
 - Create: `frontend/components/NavBar.tsx`
 
-- [ ] **Step 1: Create NavBar component**
+- [x] **Step 1: Create NavBar component**
 
 Create `frontend/components/NavBar.tsx`:
 
@@ -627,7 +627,7 @@ export default function NavBar() {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add frontend/components/NavBar.tsx
@@ -642,7 +642,7 @@ git commit -m "feat: add NavBar component"
 - Create: `frontend/components/UrlInput.tsx`
 - Create: `frontend/components/ResultCard.tsx`
 
-- [ ] **Step 1: Create UrlInput component**
+- [x] **Step 1: Create UrlInput component**
 
 Create `frontend/components/UrlInput.tsx`:
 
@@ -702,7 +702,7 @@ export default function UrlInput({ onShorten, loading }: Props) {
 }
 ```
 
-- [ ] **Step 2: Create ResultCard component**
+- [x] **Step 2: Create ResultCard component**
 
 Create `frontend/components/ResultCard.tsx`:
 
@@ -757,7 +757,7 @@ export default function ResultCard({ result, onReset }: Props) {
 }
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/components/UrlInput.tsx frontend/components/ResultCard.tsx
@@ -772,7 +772,7 @@ git commit -m "feat: add UrlInput and ResultCard components"
 - Create: `frontend/components/LinkRow.tsx`
 - Create: `frontend/components/LinkTable.tsx`
 
-- [ ] **Step 1: Create LinkRow component**
+- [x] **Step 1: Create LinkRow component**
 
 Create `frontend/components/LinkRow.tsx`:
 
@@ -858,7 +858,7 @@ export default function LinkRow({ link, onDelete }: Props) {
 }
 ```
 
-- [ ] **Step 2: Create LinkTable component**
+- [x] **Step 2: Create LinkTable component**
 
 Create `frontend/components/LinkTable.tsx`:
 
@@ -905,7 +905,7 @@ export default function LinkTable({ links, onDelete }: Props) {
 }
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/components/LinkRow.tsx frontend/components/LinkTable.tsx
@@ -921,7 +921,7 @@ git commit -m "feat: add LinkRow and LinkTable components"
 **Files:**
 - Modify: `frontend/app/page.tsx`
 
-- [ ] **Step 1: Write home page**
+- [x] **Step 1: Write home page**
 
 Replace `frontend/app/page.tsx` with:
 
@@ -1025,7 +1025,7 @@ export default function HomePage() {
 }
 ```
 
-- [ ] **Step 2: Manually test home page**
+- [x] **Step 2: Manually test home page**
 
 With backend running on 8081 and frontend on 3000:
 1. Open http://localhost:3000
@@ -1034,7 +1034,7 @@ With backend running on 8081 and frontend on 3000:
 4. Shorten 2–3 more — recent list appears below
 5. Click copy on a recent link → verify clipboard
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/app/page.tsx
@@ -1048,7 +1048,7 @@ git commit -m "feat: implement home page with URL shorten + result transform"
 **Files:**
 - Create: `frontend/app/dashboard/page.tsx`
 
-- [ ] **Step 1: Create dashboard page**
+- [x] **Step 1: Create dashboard page**
 
 Create `frontend/app/dashboard/page.tsx`:
 
@@ -1101,7 +1101,7 @@ export default function DashboardPage() {
 }
 ```
 
-- [ ] **Step 2: Manually test dashboard**
+- [x] **Step 2: Manually test dashboard**
 
 1. Open http://localhost:3000/dashboard
 2. All links should appear in the table
@@ -1109,7 +1109,7 @@ export default function DashboardPage() {
 4. Click edit on a link → should navigate to `/edit/{code}` (page not yet built — expected 404)
 5. Click "copy" → verify clipboard
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/app/dashboard/page.tsx
@@ -1123,7 +1123,7 @@ git commit -m "feat: implement dashboard page with full links table"
 **Files:**
 - Create: `frontend/app/dashboard/[code]/page.tsx`
 
-- [ ] **Step 1: Create analytics page**
+- [x] **Step 1: Create analytics page**
 
 Create `frontend/app/dashboard/[code]/page.tsx`:
 
@@ -1229,7 +1229,7 @@ export default function AnalyticsPage({ params }: { params: { code: string } }) 
 }
 ```
 
-- [ ] **Step 2: Manually test analytics page**
+- [x] **Step 2: Manually test analytics page**
 
 1. Go to http://localhost:3000/dashboard
 2. Click a short code directly (navigate to `/dashboard/{code}`)
@@ -1237,7 +1237,7 @@ export default function AnalyticsPage({ params }: { params: { code: string } }) 
 4. Click the short link via browser or curl — `curl -v http://localhost:8081/{code}` — access count should increment
 5. Reload analytics page — count should be higher
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/app/dashboard/
@@ -1251,7 +1251,7 @@ git commit -m "feat: implement analytics page with click count and link metadata
 **Files:**
 - Create: `frontend/app/edit/[code]/page.tsx`
 
-- [ ] **Step 1: Create edit page**
+- [x] **Step 1: Create edit page**
 
 Create `frontend/app/edit/[code]/page.tsx`:
 
@@ -1347,7 +1347,7 @@ export default function EditPage({ params }: { params: { code: string } }) {
 }
 ```
 
-- [ ] **Step 2: Manually test edit page**
+- [x] **Step 2: Manually test edit page**
 
 1. Go to http://localhost:3000/dashboard
 2. Click edit on any link → navigates to `/edit/{code}`
@@ -1355,7 +1355,7 @@ export default function EditPage({ params }: { params: { code: string } }) {
 4. Clear it and leave blank → "url cannot be empty." error
 5. Enter a valid new URL → click SAVE → redirected to `/dashboard` → URL updated in table
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/app/edit/
@@ -1369,7 +1369,7 @@ git commit -m "feat: implement edit page with prefilled form and redirect on sav
 **Files:**
 - Create: `frontend/app/not-found.tsx`
 
-- [ ] **Step 1: Create not-found page**
+- [x] **Step 1: Create not-found page**
 
 Create `frontend/app/not-found.tsx`:
 
@@ -1389,11 +1389,11 @@ export default function NotFound() {
 }
 ```
 
-- [ ] **Step 2: Verify 404 page**
+- [x] **Step 2: Verify 404 page**
 
 Navigate to http://localhost:3000/some-nonexistent-route. Expected: `404` in large green text with the back link.
 
-- [ ] **Step 3: Final smoke test — all pages**
+- [x] **Step 3: Final smoke test — all pages**
 
 | URL | Expected |
 |---|---|
@@ -1407,7 +1407,7 @@ Navigate to http://localhost:3000/some-nonexistent-route. Expected: `404` in lar
 | http://localhost:8081/{code} | 302 redirect to original URL |
 | http://localhost:3000/nonexistent | 404 page |
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add frontend/app/not-found.tsx

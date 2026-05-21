@@ -4,6 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
+## Style
+- Simple, direct solutions - no over-engineering
+- No emojis unless requested
+- Explain architectural rationale
+
+## Before Coding
+- Enter plan mode for non-trivial changes
+- Ask clarifying questions if ambiguous
+- Get approval before significant work
+
+## Principles
+- KISS/YAGNI/DRY: Simplest solution, no "just in case" code, single source of truth
+- Limits: Functions <30 lines, files <300 lines, nesting ≤3 levels
+- Names: Self-documenting. Booleans: is_/has_/can_. Functions: verbs. Classes: nouns.
+
+## Security (STRICT)
+- Never commit secrets, API keys, tokens, .env files, credentials, PII
+- Always validate all external input server-side, sanitize before DB queries
+
 ### Infrastructure
 ```bash
 # Start PostgreSQL (port 5434) and Redis (port 6379) — run from repo root

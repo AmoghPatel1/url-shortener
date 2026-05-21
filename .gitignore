@@ -59,3 +59,7 @@ build/
 hs_err_pid*
 replay_pid*
 .superpowers/
+.backend.jobid
+.frontend.jobid
+.backend.pid
+.frontend.pid
