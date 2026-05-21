@@ -5,7 +5,6 @@ target/
 !**/src/test/**/target/
 .claude
 CLAUDE.md
-url_shortener_implementation.md
 
 ### STS ###
 .apt_generated
